@@ -1,18 +1,20 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_cors import CORS
-from flask import session, redirect, url_for
 import pymysql
 from datetime import datetime
 import os
+import requests
 from dotenv import load_dotenv
-import smtplib
-from email.message import EmailMessage
+
+# ---------------- CONFIG ----------------
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
 app.secret_key = os.getenv("SECRET_KEY")
-# MySQL Connection (Aiven)
+
+# ---------------- DATABASE ----------------
 def get_db_connection():
     return pymysql.connect(
         host=os.getenv("DB_HOST"),
@@ -23,41 +25,31 @@ def get_db_connection():
         cursorclass=pymysql.cursors.DictCursor,
         ssl={"ssl": {}}
     )
+
+# ---------------- EMAILJS ----------------
 def send_email_notification(name, email, message):
     try:
-        msg = EmailMessage()
-        msg['Subject'] = '📩 New Contact Message'
-        msg['From'] = os.getenv("SMTP_EMAIL")
-        msg['To'] = os.getenv("ADMIN_EMAIL")
-
-        msg.set_content(f"""
-        You have received a new message from your portfolio website.
-
-        Name: {name}
-        Email: {email}
-
-        Message:
-        {message}
-        """)
-
-        with smtplib.SMTP(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as server:
-            server.starttls()
-            server.login(
-                os.getenv("SMTP_EMAIL"),
-                os.getenv("SMTP_PASSWORD")
-            )
-            server.send_message(msg)
-
+        url = "https://api.emailjs.com/api/v1.0/email/send"
+        payload = {
+            "service_id": os.getenv("EMAILJS_SERVICE_ID"),
+            "template_id": os.getenv("EMAILJS_NOTIFY_TEMPLATE_ID"),
+            "user_id": os.getenv("EMAILJS_PUBLIC_KEY"),
+            "template_params": {
+                "from_name": name,
+                "from_email": email,
+                "message": message
+            }
+        }
+        requests.post(url, json=payload, timeout=10)
     except Exception as e:
-        print("Email error:", e)
+        print("EmailJS notify error:", e)
 
-# ---------- ROUTES ----------
-
+# ---------------- ROUTES ----------------
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# GET projects
+# ---------- PROJECTS API ----------
 @app.route('/api/projects', methods=['GET'])
 def get_projects():
     try:
@@ -70,7 +62,7 @@ def get_projects():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ADD project
+
 @app.route('/api/projects', methods=['POST'])
 def add_project():
     try:
@@ -78,16 +70,14 @@ def add_project():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        sql = """
-        INSERT INTO projects (title, description, technologies)
-        VALUES (%s, %s, %s)
-        """
-
-        cursor.execute(sql, (
-            data.get("title"),
-            data.get("description"),
-            ",".join(data.get("technologies", []))
-        ))
+        cursor.execute(
+            "INSERT INTO projects (title, description, technologies) VALUES (%s, %s, %s)",
+            (
+                data.get("title"),
+                data.get("description"),
+                ",".join(data.get("technologies", []))
+            )
+        )
 
         conn.commit()
         conn.close()
@@ -96,7 +86,8 @@ def add_project():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# CONTACT form
+
+# ---------- CONTACT FORM ----------
 @app.route('/api/contact', methods=['POST'])
 def contact():
     try:
@@ -104,21 +95,21 @@ def contact():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        sql = """
-        INSERT INTO contacts (name, email, message)
-        VALUES (%s, %s, %s)
-        """
+        cursor.execute(
+            "INSERT INTO contacts (name, email, message) VALUES (%s, %s, %s)",
+            (
+                data.get('name'),
+                data.get('email'),
+                data.get('message')
+            )
+        )
 
-        cursor.execute(sql, (
-            data.get('name'),
-            data.get('email'),
-            data.get('message')
-        ))
         send_email_notification(
             data.get('name'),
             data.get('email'),
             data.get('message')
         )
+
         conn.commit()
         conn.close()
         return jsonify({"message": "Message sent successfully"}), 200
@@ -126,7 +117,7 @@ def contact():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# GET contacts
+
 @app.route('/api/contacts', methods=['GET'])
 def get_contacts():
     try:
@@ -138,6 +129,9 @@ def get_contacts():
         return jsonify({"contacts": contacts})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ---------- ADMIN AUTH ----------
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -153,6 +147,12 @@ def admin_login():
     return render_template('admin_login.html')
 
 
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin', None)
+    return redirect('/admin/login')
+
+
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('admin'):
@@ -160,34 +160,7 @@ def admin_dashboard():
     return render_template('admin_dashboard.html')
 
 
-@app.route('/admin/project', methods=['GET', 'POST'])
-def admin_add_project():
-    if not session.get('admin'):
-        return jsonify({"error": "Unauthorized"}), 403
-
-    try:
-        data = request.json
-        # Convert the string from the input field into a cleaned string for the DB
-        tech_string = data.get('technologies', '') 
-        
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            "INSERT INTO projects (title, description, technologies) VALUES (%s, %s, %s)",
-            (data['title'], data['description'], tech_string)
-        )
-
-        conn.commit()
-        conn.close()
-        return jsonify({"message": "Project added"})
-    except Exception as e:
-        print(f"Error: {e}") # Look at your terminal to see the exact error
-        return jsonify({"error": str(e)}), 500
-@app.route('/admin/logout')
-def admin_logout():
-    session.pop('admin', None)
-    return redirect('/admin/login')
+# ---------- ADMIN PROJECTS ----------
 @app.route('/admin/projects')
 def admin_projects():
     if not session.get('admin'):
@@ -200,6 +173,8 @@ def admin_projects():
     conn.close()
 
     return jsonify(projects)
+
+
 @app.route('/admin/project/<int:id>', methods=['DELETE'])
 def delete_project(id):
     if not session.get('admin'):
@@ -212,6 +187,9 @@ def delete_project(id):
     conn.close()
 
     return jsonify({"message": "Deleted"})
+
+
+# ---------- ADMIN MESSAGES ----------
 @app.route('/admin/messages')
 def admin_messages():
     if not session.get('admin'):
@@ -227,6 +205,7 @@ def admin_messages():
 
     return jsonify(messages)
 
+
 @app.route('/admin/message/read/<int:id>', methods=['POST'])
 def mark_message_read(id):
     if not session.get('admin'):
@@ -234,14 +213,13 @@ def mark_message_read(id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE contacts SET is_read = NOT is_read WHERE id=%s",
-        (id,)
-    )
+    cursor.execute("UPDATE contacts SET is_read = NOT is_read WHERE id=%s", (id,))
     conn.commit()
     conn.close()
 
     return jsonify({"message": "Status updated"})
+
+
 @app.route('/admin/message/<int:id>', methods=['DELETE'])
 def delete_message(id):
     if not session.get('admin'):
@@ -255,6 +233,8 @@ def delete_message(id):
 
     return jsonify({"message": "Deleted"}), 200
 
+
+# ---------- ADMIN REPLY (EmailJS) ----------
 @app.route('/admin/message/reply', methods=['POST'])
 def reply_message():
     if not session.get('admin'):
@@ -262,19 +242,25 @@ def reply_message():
 
     data = request.json
 
-    msg = EmailMessage()
-    msg['Subject'] = "Reply from Portfolio Admin"
-    msg['From'] = os.getenv("SMTP_EMAIL")
-    msg['To'] = data['email']
+    try:
+        url = "https://api.emailjs.com/api/v1.0/email/send"
+        payload = {
+            "service_id": os.getenv("EMAILJS_SERVICE_ID"),
+            "template_id": os.getenv("EMAILJS_REPLY_TEMPLATE_ID"),
+            "user_id": os.getenv("EMAILJS_PUBLIC_KEY"),
+            "template_params": {
+                "to_email": data['email'],
+                "reply_message": data['reply']
+            }
+        }
+        requests.post(url, json=payload, timeout=10)
+        return jsonify({"message": "Reply sent"}), 200
 
-    msg.set_content(data['reply'])
+    except Exception as e:
+        print("EmailJS reply error:", e)
+        return jsonify({"error": "Failed to send reply"}), 500
 
-    with smtplib.SMTP(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as server:
-        server.starttls()
-        server.login(os.getenv("SMTP_EMAIL"), os.getenv("SMTP_PASSWORD"))
-        server.send_message(msg)
 
-    return jsonify({"message": "Reply sent"})
-
+# ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)

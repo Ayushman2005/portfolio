@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ayushman's Portfolio</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css"
+    />
+    <link
+      rel="shortcut icon"
+      href="https://cdn-icons-png.flaticon.com/128/6811/6811846.png"
+      type="image/x-icon"
+    />
+  </head>
+  <a href="/admin/login" class="admin-fab" title="Admin Panel">
+    <img
+      src="https://cdn-icons-png.flaticon.com/128/1000/1000997.png"
+      alt="Admin"
+    />
+  </a>
+  <div id="projectModal" class="project-modal">
+    <div class="project-modal-content">
+      <span class="close-modal" onclick="closeProjectModal()">x</span>
+      <img id="modalImage" />
+      <h3 id="modalTitle"></h3>
+      <p id="modalDesc"></p>
+      <div class="project-actions">
+        <a id="modalGithub" target="_blank">GitHub</a>
+        <a id="modalLive" target="_blank">Live Demo</a>
+      </div>
+    </div>
+  </div>
+  <body>
+    <section id="home" class="hero">
+      <div class="video-bg">
+        <video autoplay muted loop playsinline>
+          <source
+            src="https://www.pexels.com/download/video/1449846/"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+      <nav class="navbar">
+        <div class="nav-container">
+          <p id="name" class="glitch" data-text="Ayushman Kar">Ayushman Kar</p>
+          <ul class="nav-menu">
+            <li><a href="#home" class="nav-link">Home</a></li>
+            <li><a href="#about" class="nav-link">About</a></li>
+            <li><a href="#projects" class="nav-link">Projects</a></li>
+            <li><a href="#contact" class="nav-link">Contact</a></li>
+          </ul>
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </nav>
+
+      <div class="hero-content">
+        <div class="profile-pic-wrapper">
+          <img
+            src="/static/IMG_20251222_220840.png"
+            alt="Ayushman Kar"
+            class="profile-pic"
+          />
+        </div>
+        <h1 class="intro"><span id="type-name"></span></h1>
+        <p class="hero-subtitle animated-underline">
+          <span id="job-rotate"></span>
+        </p>
+        <div class="cta-buttons">
+          <a href="#projects" class="btn btn-primary">View Work</a>
+          <a href="#contact" class="btn btn-secondary">Get In Touch</a>
+        </div>
+      </div>
+      <div class="hero-animation">
+        <div class="floating-circle circle-1"></div>
+        <div class="floating-circle circle-2"></div>
+        <div class="floating-circle circle-3"></div>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="container">
+        <h2 class="section-title">About Me</h2>
+        <div class="about-content">
+          <div class="about-text">
+            <p>
+              I'm a passionate developer and an AI/ML enthusiast with a strong
+              interest in building intelligent systems. I love turning complex
+              problems into simple, beautiful, and intuitive solutions.
+            </p>
+            <div class="skill-sections">
+              <!-- FRONTEND -->
+              <div class="skill-card reveal">
+                <div class="skill-card-inner">
+                  <div class="skill-card-front">
+                    <h3>AI & Machine Learning</h3>
+                    <p>Artificial Intelligence & Machine Learning</p>
+                  </div>
+                  <div class="skill-card-back">
+                    <div class="skill">
+                      <i class="devicon-python-plain"></i> Python
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="fas fa-eye"></i> Computer Vision & PyTorch
+                      <div class="bar"><span style="width: 80%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-keras-plain"></i> Keras & Scikit-Learn
+                      <div class="bar"><span style="width: 85%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-tensorflow-plain"></i> TensorFlow
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BACKEND -->
+              <div class="skill-card reveal">
+                <div class="skill-card-inner">
+                  <div class="skill-card-front">
+                    <h3>Backend</h3>
+                    <p>Logic & Databases</p>
+                  </div>
+                  <div class="skill-card-back">
+                    <div class="skill">
+                      <i class="devicon-python-plain"></i> Python
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-flask-original"></i> Flask
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-mysql-plain"></i> MySQL
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DEVOPS / TOOLS -->
+              <div class="skill-card reveal">
+                <div class="skill-card-inner">
+                  <div class="skill-card-front">
+                    <h3>DevOps & Tools</h3>
+                    <p>Deployment & Workflow</p>
+                  </div>
+                  <div class="skill-card-back">
+                    <div class="skill">
+                      <i class="devicon-git-plain"></i> Git
+                      <div class="bar"><span style="width: 80%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-github-original"></i> GitHub
+                      <div class="bar"><span style="width: 75%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-docker-plain"></i> Docker
+                      <div class="bar"><span style="width: 60%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="skill-card reveal">
+                <div class="skill-card-inner">
+                  <div class="skill-card-front">
+                    <h3>Frontend</h3>
+                    <p>UI / UX & Client Side</p>
+                  </div>
+                  <div class="skill-card-back">
+                    <div class="skill">
+                      <i class="devicon-html5-plain"></i> HTML
+                      <div class="bar"><span style="width: 100%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-css3-plain"></i> CSS
+                      <div class="bar"><span style="width: 100%"></span></div>
+                    </div>
+                    <div class="skill">
+                      <i class="devicon-javascript-plain"></i> JavaScript
+                      <div class="bar"><span style="width: 90%"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="projects">
+      <div class="container">
+        <h2 class="section-title">Projects</h2>
+        <div id="projectsGrid" class="projects-grid">
+          <!-- Projects will be loaded from database -->
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="container">
+        <h2 class="section-title">Get In Touch</h2>
+        <form id="contactForm" class="contact-form">
+          <div class="form-group">
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Your Name"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="Your Email"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <textarea
+              id="message"
+              name="message"
+              placeholder="Your Message"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+        <div id="formMessage" class="form-message"></div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>&copy; 2024 Ayushman Kar. All rights reserved.</p>
+    </footer>
+
+    <script src="/static/script.js"></script>
+  </body>
+</html>

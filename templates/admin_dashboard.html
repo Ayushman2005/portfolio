@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link
+      rel="shortcut icon"
+      href="https://cdn-icons-png.flaticon.com/128/11831/11831523.png"
+      type="image/x-icon"
+    />
+  </head>
+  <a href="/admin/logout" class="admin-logout">Logout</a>
+  <body class="admin-body">
+    <div class="video-bg">
+      <video autoplay muted loop playsinline>
+        <source
+          src="https://www.pexels.com/download/video/1449846/"
+          type="video/mp4"
+        />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+    <div class="admin-navbar">
+      <span>Admin Panel</span>
+    </div>
+    <div class="admin-container">
+      <h2 class="admin-title">Admin Dashboard</h2>
+      <div class="admin-card">
+        <input id="title" placeholder="Project Title" />
+        <textarea id="description" placeholder="Project Description"></textarea>
+        <input id="technologies" placeholder="Technologies (comma separated)" />
+        <button onclick="addProject()">Add Project</button>
+        <h3 style="margin-top: 2rem">Existing Projects</h3>
+        <div id="adminProjects"></div>
+        <h3 style="margin-top: 2.5rem">Contact Messages</h3>
+        <div id="adminMessages"></div>
+      </div>
+    </div>
+    <div id="toast" class="toast"></div>
+    <script src="/static/script.js"></script>
+  </body>
+</html>
